@@ -14,7 +14,7 @@ function ShowEnvelopAperture(optics,geometry,myTitle,Laccel,Qx,Qy,Chrx,Chry,emig
     [aperH,aperOffH,aperSH]=GetAperture(geometry,0);
     [aperV,aperOffV,aperSV]=GetAperture(geometry,90);
 
-    emigUsr=1.0E-06; % [m rad]
+    emigUsr=ones(1,2)*1.0E-06; % [m rad]
     if ( exist('emig','var') )
         emigUsr=emig;
     end
@@ -22,7 +22,7 @@ function ShowEnvelopAperture(optics,geometry,myTitle,Laccel,Qx,Qy,Chrx,Chry,emig
     if ( exist('sigdpp','var') )
         sigdppUsr=sigdpp;
     end
-    
+        
     f1=figure('Name','Beam envelop and aperture','NumberTitle','off');
 
     % - geometry
@@ -33,7 +33,7 @@ function ShowEnvelopAperture(optics,geometry,myTitle,Laccel,Qx,Qy,Chrx,Chry,emig
     end
     % - hor envelop
     ax2=subplot(3,1,2);
-    PlotOptics(optics,"ENVX",emigUsr,sigdppUsr);
+    PlotOptics(optics,"ENVX",emigUsr(1),sigdppUsr);
     hold on; 
     PlotOptics(optics,"X");
     hold on;
@@ -42,11 +42,10 @@ function ShowEnvelopAperture(optics,geometry,myTitle,Laccel,Qx,Qy,Chrx,Chry,emig
     if ( exist('Laccel','var') )
         xlim([0 Laccel]);
     end
-    ylim([-0.075 0.075]);
     grid on;
     % - ver envelop
     ax3=subplot(3,1,3);
-    PlotOptics(optics,"ENVY",emigUsr,sigdppUsr);
+    PlotOptics(optics,"ENVY",emigUsr(2),sigdppUsr);
     hold on; 
     PlotOptics(optics,"Y");
     hold on;
@@ -55,7 +54,6 @@ function ShowEnvelopAperture(optics,geometry,myTitle,Laccel,Qx,Qy,Chrx,Chry,emig
     if ( exist('Laccel','var') )
         xlim([0 Laccel]);
     end
-    ylim([-0.05 0.05]);
     grid on;
     % - title
     tmpTitle="";

@@ -1,4 +1,4 @@
-function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
+function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV,lSupImp,lHist)
 % ShowLossMap     embed the longitudinal distribution of losses (histogram)
 %                   into a nice plot, possibly with lattice structure and
 %                   aperture model
@@ -15,6 +15,9 @@ function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
 %   geometry: (thick) lens lattice;
 %   allAperH: horizontal aperture model;
 %   allAperV: vertical aperture model;
+%   lSupImp: superimpose loss coordinates to aperture plot (boolean);
+%   lHist: compute longitudinal histogram of losses (boolean);
+%          otherwise, simply return loss counts;
 %
 % output arguments:
 %   hh:  histogram counts;
@@ -22,6 +25,9 @@ function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
 %
 % See also ReadLosses, GetVariablesAndMappingParticleData, PlotLossMap,
 %                       GetColumnsAndMappingTFS, PlotLattice, PlotAperture.
+
+    if (~exist("lSupImp","var")), lSupImp=true; end
+    if (~exist("lHist","var")), lHist=true; end
 
     nPlots=1;
     if ( exist('geometry','var') )
@@ -71,12 +77,14 @@ function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
         tmpAx=subplot(nPlots,1,iPlot);
         axs=[ axs tmpAx ];
         PlotAperture(allAperH{1},allAperH{2},allAperH{3},allAperH{4},allAperH{5});
-        hold on;
-        % losses
-        if (ismissing(indices))
-            plot(losses{colS},losses{colX},'r.');
-        else
-            plot(losses{colS}(indices),losses{colX}(indices),'r.');
+        if (lSupImp)
+            hold on;
+            % losses
+            if (ismissing(indices))
+                plot(losses{colS},losses{colX},'r.');
+            else
+                plot(losses{colS}(indices),losses{colX}(indices),'r.');
+            end
         end
         title(sprintf('H plane')); grid on;
         xlim([minS maxS]);
@@ -88,12 +96,14 @@ function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
         tmpAx=subplot(nPlots,1,iPlot);
         axs=[ axs tmpAx ];
         PlotAperture(allAperV{1},allAperV{2},allAperV{3},allAperV{4},allAperV{5});
-        hold on;
-        % losses
-        if (ismissing(indices))
-            plot(losses{colS},losses{colY},'r.');
-        else
-            plot(losses{colS}(indices),losses{colY}(indices),'r.');
+        if (lSupImp)
+            hold on;
+            % losses
+            if (ismissing(indices))
+                plot(losses{colS},losses{colY},'r.');
+            else
+                plot(losses{colS}(indices),losses{colY}(indices),'r.');
+            end
         end
         title(sprintf('V plane')); grid on;
         xlim([minS maxS]);
@@ -103,7 +113,7 @@ function [hh,cc]=ShowLossMap(losses,indices,dS,geometry,allAperH,allAperV)
     iPlot=iPlot+1;
     tmpAx=subplot(nPlots,1,iPlot);
     axs=[ axs tmpAx ];
-    [hh,cc] = PlotLossMap(losses,indices,dsUsr,maxS,minS);
+    [hh,cc] = PlotLossMap(losses,indices,dsUsr,maxS,minS,lHist);
     set(tmpAx, 'YScale', 'log');
     % manual treatment of yticklabels...
     % set(tmpAx, 'YTick', [min(ylim):10:max(ylim)]);

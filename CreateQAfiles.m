@@ -14,27 +14,28 @@ if (~exist("pathToLibrary","var"))
     pathToLibrary=".\";
     addpath(genpath(pathToLibrary));
 end
+% - include MachineRefs
+pathToLibrary="../MachineRefs";
+addpath(genpath(pathToLibrary));
 
 %% settings
 
 % -------------------------------------------------------------------------
 % USER's input data
-kPath="S:\Accelerating-System\Accelerator-data";
-% kPath="K:";
-
-beamPart="CARBON";
 machine="ISO3";
+beamPart="PROTON";
 config="TM"; % select configuration: TM, RFKO
 % -------------------------------------------------------------------------
 
 %% parse DBs
+myConfig=sprintf("%s,%s,%s",machine,beamPart,config);
 
 % - get PS mapping
-clear PSmapping; PSmapping=readtable("PSmapping.xlsx");
+clear PSmapping; FullFileName=ReturnDefFile("PSmapping",myConfig); PSmapping=readtable(FullFileName);
 
 % - get TM values
 clear cyCodesTM rangesTM EksTM BrhosTM currentsTM fieldsTM kicksTM psNamesTM FileNameCurrentsTM magNamesTM ;
-[cyCodesTM,rangesTM,EksTM,BrhosTM,currentsTM,fieldsTM,kicksTM,psNamesTM,FileNameCurrentsTM]=AcquireLGENValues(beamPart,machine,config);
+[cyCodesTM,rangesTM,EksTM,BrhosTM,currentsTM,fieldsTM,kicksTM,psNamesTM,FileNameCurrentsTM]=AcquireLGENValues(myConfig);
 psNamesTM=string(psNamesTM);
 cyCodesTM=upper(string(cyCodesTM));
 magNamesTM=MagNames2LGENnames(psNamesTM,true,PSmapping);
@@ -48,20 +49,22 @@ LGENvisualCheck(psNamesTM,BrhosTM,"B\rho [Tm]",currentsTM./BrhosTM,"I/B\rho [A/T
 % -------------------------------------------------------------------------
 % USER's input data
 % wrMagnetNames=[ "H2-012A-QUE" "H2-016A-QUE" "H2-022A-QUE" "HE-025A-QUE" ];
-wrMagnetNames=[ "H2-012A-QUE" "H2-016A-QUE" "H2-022A-QUE" "HE-025A-QUE" ];
+% wrMagnetNames=[ "H2-012A-QUE" "H2-016A-QUE" "H2-022A-QUE" "HE-025A-QUE" ];
 % wrMagnetNames=[ "HE-018A-QUE" "HE-020A-QUE" "HE-023A-QUE" "HE-025A-QUE" ];
-wrRange=[30 30 30 30]; % [mm]
+wrMagnetNames=[ "HE-H07A-CEB" "HE-V07A-CEB" "HE-H27A-CEB" "HE-V27A-CEB" ];
+wrRange=[320 320 320 320]; % [mm]
 wrScan=["scanTM" "scanTM" "scanTM" "scanTM"];
-wrDImin=[20   20   20   20  ]; % [A]
-wrDImax=[20 20 20 20  ]; % [A]
-wrDIdel=[1   1   1   1  ];  % [A]
-wrNtimes=[ 1 1 1 1];
-wrIbef=[5 5 5 5 ];   % [A]
-wrNIbef=[3 3 3 3];
-wrIaft=[350 350 350 350 ]; % [A]
+wrDImin=[210  140  140  140  ]; % min current [A]
+wrDImax=[ 70  140  140  140  ]; % max current [A]
+wrDIdel=[ 70   70   70   70  ]; % delta current [A]
+wrNtimes=[ 1 1 1 1 ];   % repeat scan N times
+wrNpoints=[ 5 5 5 5 ];  % repeat each point N times
+wrIbef=[ -150 -150 -150 -150 ];   % [A]
+wrNIbef=[ 2 2 2 2 ];
+wrIaft=[150 150 150 150 ]; % [A]
 wrNIaft=[2  2 2  2];
-wrImin=[ 5 5 5 5 ];
-wrImax=[ 350 350 350 350];
+wrImin=[ -150 -150 -150 -150 ];
+wrImax=[  150  150  150  150 ];
 oFileName="test.xlsx";
 
 % -------------------------------------------------------------------------
@@ -72,8 +75,8 @@ for ii=1:length(wrMagnetNames)
     % echo TM values
     rTM=find(rangesTM==wrRange(ii));
     if ( isempty(rTM) ), error("Range %d mm not available in TM table!",wrRange(ii)); end
-    pTM=find(strcmpi(psNamesTM,string(PSmapping.LGEN(jj))));
-    if ( isempty(pTM) ), error("LGEN name %s not found in TM table!",PSmapping.LGEN(jj)); end
+    pTM=find(strcmpi(psNamesTM,wrPSnames(ii)));
+    if ( isempty(pTM) ), error("LGEN name %s not found in TM table!",wrPSnames(ii)); end
     warning("...TM value of %s (aka %s) for %s at %d mm: %f A;",wrPSnames(ii),wrMagnetNames(ii),beamPart,wrRange(ii),currentsTM(rTM,pTM));
     % array characteristics
     switch upper(wrScan(ii))
@@ -88,7 +91,7 @@ for ii=1:length(wrMagnetNames)
             Imax=currentsTM(rTM,pTM)+wrDImax(ii);
             Idel=wrDIdel(ii);
     end
-    tmpScan=(Imin:Idel:Imax)';
+    tmpScan=repelem(Imin:Idel:Imax,wrNpoints(ii))';
     tmpScan=CorrectRange(tmpScan,wrImin(ii),wrImax(ii));
     tmpScan=RepeatScan(tmpScan,wrNtimes(ii));
     tmpScan=DecorateScan(tmpScan,wrIbef(ii),wrIaft(ii),wrNIbef(ii),wrNIaft(ii));

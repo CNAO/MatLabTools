@@ -300,7 +300,7 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
         end
         cyCodes=cyCodes(idx);
         cyProgs=string(cyProgs);
-        times=times(:,idx);
+        if (size(times,2)==nAcquired), times=times(:,idx); end
     else
         measData=missing;
         cyProgs=missing;

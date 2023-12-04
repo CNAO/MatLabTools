@@ -16,6 +16,10 @@
 %   for CAMeretta/DDS/GIM only, the script also compares summary data
 %   against statistics data computed on profiles;
 
+%% clean
+clear all;
+close all;
+
 %% manual run
 if (~exist("MonPaths","var")) 
     % script manually run by user
@@ -27,6 +31,8 @@ if (~exist("MonPaths","var"))
     if (~exist("pathToLibrary","var"))
         pathToLibrary=".\";
         addpath(genpath(pathToLibrary));
+        pathToLibrary="../MachineRefs";
+        addpath(genpath(pathToLibrary));
     end
     % - clear settings
     clear kPath myTit monTypes MonPaths myLabels
@@ -35,33 +41,25 @@ if (~exist("MonPaths","var"))
     % USER's input data
     % -------------------------------------------------------------------------
     kPath="P:\Accelerating-System\Accelerator-data";
-    monTypes="CAMdumps"; % CAM/CAMdumps, DDS, GIM, QBM/QPP/PIB/PMM/SFH/SFM/SFP
+    monTypes="CAM"; % CAM/CAMdumps, DDS, GIM, QBM/QPP/PIB/PMM/SFH/SFM/SFP
     myLabels=[...
-        "test 1: H scan (1E6 per spot)"
-        "test 2: grid (1E6 per spot)"
-        "test 3: V scan (1E6 per spot)"
-        "test 4: V scan (1.2E6 per spot)"
-        "test 5: V scan (1.2E6 per spot)"
-        "test 6: H scan (1.2E6 per spot)"
-        "test 7: H scan (1.2E6 per spot)"
-        "test 8: grid (1.2E6 per spot)"
+        "Sala1 (16-10-2023)"
+        "Sala2H (16-10-2023)"
+        "Sala2V (16-10-2023)"
+        "Sala3 (16-10-2023)"
         ];
     % myLabels=monTypes;
     lSkip=false; % DDS summary file: skip first 2 lines (in addition to header line)
     myFigPath=".";
     % part-dependent stuff
     % - protoni
-    myFigName="Tests with DDS";
-    myTit="Tests with DDS";
+    myFigName="Machie Photos";
+    myTit="Machine Photos";
     MonPaths=[...
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2213\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2219\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2222\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2225\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2227\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2229\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2231\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2233\"
+        "P:\Accelerating-System\Accelerator-data\Area dati MD\00Steering\SteeringPazienti\carbonio\sala1\2023\2023.10.16\CarbSO2_LineZ_Size6_16-10-2023_0800\"
+        "P:\Accelerating-System\Accelerator-data\Area dati MD\00Steering\SteeringPazienti\carbonio\sala2U\2023\2023.10.16\CarbSO2_LineU_Size6_16-10-2023_0219\"
+        "P:\Accelerating-System\Accelerator-data\Area dati MD\00Steering\SteeringPazienti\carbonio\sala2V\2023\2023.10.16\CarbSO2_LineV_Size6_16-10-2023_0908\"
+        "P:\Accelerating-System\Accelerator-data\Area dati MD\00Steering\SteeringPazienti\carbonio\sala3\2023\2023.10.15\CarbSO2_LineT_Size6_15-10-2023_2313\"
         ];
 %     % - carbonio
 %     myFigName="summary_carbonio_GIM_2023-05-09.10";
@@ -69,7 +67,7 @@ if (~exist("MonPaths","var"))
 %     MonPaths=[...
 %         strcat(kPath,"\Area dati MD\00Summary\Carbonio\2023\Maggio\2023.05.09-10\Steering ridotti\GIM\PRC-544-230511-0028_H2-009B-GIM_AllTrig\") 
 %         ];
-    vsX="ID"; % ["Ek"/"En"/"Energy","mm"/"r"/"range","ID"/"IDs"]
+    vsX="Ek"; % ["Ek"/"En"/"Energy","mm"/"r"/"range","ID"/"IDs"]
     iNotShow=false(127,2); 
     iNotShow(1:2,1)=true;  % do not show left-most fibers on hor plane (broken)
 end
@@ -137,8 +135,8 @@ for iDataAcq=1:nDataSets
             [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsBDProcedure(tmpProfiles);
     end
     % - Eks,mms
-    tmpEksProf=ConvertCyCodes(tmpCyCodesProf,"Ek","MeVvsCyCo_P.xlsx");
-    tmpMmsProf=ConvertCyCodes(tmpCyCodesProf,"mm","MeVvsCyCo_P.xlsx");
+    tmpEksProf=MapCyCodes(tmpCyCodesProf,"Ek","SYNCHRO");
+    tmpMmsProf=MapCyCodes(tmpCyCodesProf,"Range","SYNCHRO");
     % - store data
     cyProgsProf=ExpandMat(cyProgsProf,tmpCyProgsProf);
     cyCodesProf=ExpandMat(cyCodesProf,tmpCyCodesProf);
@@ -157,8 +155,8 @@ for iDataAcq=1:nDataSets
         % - quick check of consistency of parsed data
         if (length(tmpCyProgsSumm)~=length(tmpCyProgsProf)), error("...inconsistent data set between summary data and actual profiles"); end
         % - Eks,mms
-        tmpEksSumm=ConvertCyCodes(tmpCyCodesSumm,"Ek","MeVvsCyCo_P.xlsx");
-        tmpMmsSumm=ConvertCyCodes(tmpCyCodesSumm,"mm","MeVvsCyCo_P.xlsx");
+        tmpEksSumm=MapCyCodes(tmpCyCodesSumm,"Ek","SYNCHRO");
+        tmpMmsSumm=MapCyCodes(tmpCyCodesSumm,"Range","SYNCHRO");
         % - store data
         cyProgsSumm=ExpandMat(cyProgsSumm,tmpCyProgsSumm);
         cyCodesSumm=ExpandMat(cyCodesSumm,tmpCyCodesSumm);
@@ -221,6 +219,39 @@ for iDataAcq=1:nDataSets
                 ["summary data" "stat on profiles"],missing(),sprintf("%s - %s - summary vs profile stats",myTit,myLabels(iDataAcq)));
     end
 end
+
+%% show figures of merit
+% - references
+[refFWHM,refXVals]=Spots_LoadEffectiveSpecs("CARBON",vsX,"TM"); refLeg=["reference" "ref+" "ref-"];
+
+% - FWHM
+showYlabels=strings(nDataSets,1); showYlabels(:)="FWHM [mm]";
+showXlabels=strings(nDataSets,1); showXlabels(:)=addLabel;
+myTitles=strings(nDataSets+1,1); myTitles(1:end-1)=myLabels; myTitles(end)="FWHM";
+xVals=NaN(size(addIndex,1),2,size(addIndex,2));
+xVals(:,1,:)=addIndex; xVals(:,2,:)=addIndex;
+myLeg=["HOR" "VER"];
+ShowSeries(xVals,FWHMsProf,showXlabels,showYlabels,myLeg,myTitles,refFWHM,refXVals,refLeg);
+
+% - xy-asymmetry
+[FWHMprofGeoMean,profASYM]=Spots_MeritFWHM(FWHMsProf);
+showYlabels=["[mm]" "[%]"];
+showXlabels=strings(2,1); showXlabels(:)=addLabel;
+myLeg=myLabels; myTitles=["FWHM_y-FWHM_x" "normalised: (FWHM_y-FWHM_x)/geoAve" "yx-asymmetry"];
+xVals=NaN(size(addIndex,1),size(addIndex,2),2);
+xVals(:,:,1)=addIndex; xVals(:,:,2)=addIndex;
+yVals=NaN(size(addIndex,1),size(addIndex,2),2);
+yVals(:,:,1)=profASYM; yVals(:,:,2)=profASYM./FWHMprofGeoMean*100;
+ShowSeries(xVals,yVals,showXlabels,showYlabels,myLeg,myTitles);
+
+% - BARicenters
+showYlabels=strings(nDataSets,1); showYlabels(:)="BAR [mm]";
+showXlabels=strings(nDataSets,1); showXlabels(:)=addLabel;
+myTitles=strings(nDataSets+1,1); myTitles(1:end-1)=myLabels; myTitles(end)="BAR";
+xVals=NaN(size(addIndex,1),2,size(addIndex,2));
+xVals(:,1,:)=addIndex; xVals(:,2,:)=addIndex;
+myLeg=["HOR" "VER"];
+ShowSeries(xVals,BARsProf,showXlabels,showYlabels,myLeg,myTitles);
 
 %% save summary data
 % oFileName=strcat(kPath,"\scambio\Alessio\Carbonio_preSteering_summary-from-profiles.csv");

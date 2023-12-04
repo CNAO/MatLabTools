@@ -1,10 +1,19 @@
 %% main function
 
-function [cyCodes,ranges,Eks,Brhos,currents,fields,kicks,psNames,FileNameCurrents]=AcquireLGENValues(beamPartIn,machineIn,configIn,filters,LGENsCheck)
+function [cyCodes,ranges,Eks,Brhos,currents,fields,kicks,psNames,FileNameCurrents]=AcquireLGENValues(myConfig,path2Files,filters,LGENsCheck)
 
     fprintf("Getting current values...\n");
     
-    % filter PSs where all CyCo show "NaN" or "0"
+    %% input arguments
+    [machine,beamPart,focus,config]=DecodeConfig(myConfig);
+    fprintf("...for: machine=%s; beamPart=%s; config=%s;\n",machine,beamPart,config);
+    if (~exist("path2Files","var")), path2Files=missing(); end
+    if (ismissing(path2Files))
+        path2Files=ReturnDefFile("LGEN",myConfig);
+    end
+    if (length(path2Files)==1)
+        path2Files(2)=ReturnDefFile("BRHO",myConfig);
+    end
     if ( ~exist('filters','var') ), filters=["NaN" "0"]; end
     if ( exist('LGENsCheck','var') )
         doVisualCheck=true;
@@ -13,159 +22,11 @@ function [cyCodes,ranges,Eks,Brhos,currents,fields,kicks,psNames,FileNameCurrent
         LGENsCheck=missing;
     end
 
-    % processing
-    beamPart=upper(beamPartIn);
-    machine=upper(machineIn);
-    config=upper(configIn);
-
-    % preliminary checks
-    if ( ~strcmp(config,"TM") & ~strcmp(config,"RFKO") )
-        error("unrecognised config: %s - available only TM and RFKO!",config);
-    end
-    if ( ~strcmp(beamPart,"PROTON") & ~strcmp(beamPart,"CARBON") )
-        error("unrecognised beam particle: %s - available only PROTON and CARBON!",beamPart);
-    end
-    if ( ~strcmp(machine,"SYNCHRO") & ~strcmp(machine,"LINET") & ~strcmp(machine,"SALA3") ...
-                                    & ~strcmp(machine,"LINEU") & ~strcmp(machine,"SALA2H") ...
-                                    & ~strcmp(machine,"LINEV") & ~strcmp(machine,"SALA2V") ...
-                                    & ~strcmp(machine,"LINEZ") & ~strcmp(machine,"SALA1") ...
-                                    & ~strcmp(machine,"XPRX1") & ~strcmp(machine,"ISO1") ...
-                                    & ~strcmp(machine,"XPRX2") & ~strcmp(machine,"ISO2") ...
-                                    & ~strcmp(machine,"XPRX3") & ~strcmp(machine,"ISO3") ...
-                                    & ~strcmp(machine,"XPRX4") & ~strcmp(machine,"ISO4") ...
-                                    )
-        error("unrecognised machine: %s - available only SYNCHRO, LINEZ/SALA1, LINEV/SALA2V, LINEU/SALA2H, LINET/SALA3, XPRX1/ISO1, XPRX2/ISO2, XPRX3/ISO3 and XPRX4/ISO4!",machine);
-    end
-    fprintf("...for: machine=%s; beamPart=%s; config=%s;\n",machine,beamPart,config);
-
-    % do the job
-    switch machine
-        case "SYNCHRO"
-            switch beamPart
-                case "PROTON"
-                    % BUILD TABLE WITH CyCo, Range, Energy and Brho
-                    % - get CyCo (col 1 []), range (col 2 [mm]) and Energy (col 4 [MeV/n]) - columns in cell array
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Rampe\MatlabRampGen2.8\INPUT\CSV-TRATTAMENTI\Protoni.csv";
-                    CyCoData = GetOPDataFromTables(FileName);
-                    % - build array of values of Brho (as in RampGen)
-                    mp = 938.255; An = 1; Zn = 1;
-                    % PARSE FILE WITH CURRENTS AT FT - columns in final cell array:
-                    % - nRows: number of power supplies + a header
-                    % - nColumns: number of cycle codes + 2 (PS name + property)
-                    FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\Sincro\CorrentiFlatTop\ProtoniSincro_2021-02-13.xlsx"; % AMereghetti, 2021-11-19: no longer there!
-                    currentData = GetOPDataFromTables(FileNameCurrents,"Foglio1");
-                case "CARBON"
-                    if ( strcmp(config,"RFKO") )
-                        error("no source of data available for %s %s %s",machine,beamPart,config);
-                    end
-                    % BUILD TABLE WITH CyCo, Range, Energy and Brho
-                    % - get CyCo (col 1 []), range (col 2 [mm]) and Energy (col 4 [MeV/n]) - columns in cell array
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Rampe\MatlabRampGen2.8\INPUT\CSV-TRATTAMENTI\Carbonio.csv";
-                    CyCoData = GetOPDataFromTables(FileName);
-                    % - build array of values of Brho (as in RampGen)
-                    mp = 931.2225; An = 12; Zn = 6;
-                    % PARSE FILE WITH CURRENTS AT FT - columns in final cell array:
-                    % - nRows: number of power supplies + a header
-                    % - nColumns: number of cycle codes + 2 (PS name + property)
-                    FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\Sincro\CorrentiFlatTop\CarbonioSincro_2021-02-05.xlsx"; % AMereghetti, 2021-11-19: no longer there!
-                    currentData = GetOPDataFromTables(FileNameCurrents,"Foglio1");
-                otherwise
-                    error("no source of data available for %s %s %s",machine,beamPart,config);
-            end % switch: LGEN, SYNCHRO, beamPart
-            % continue crunching CyCo data
-            CyCoData = CyCoData(2:end,:); % remove header
-            c = 2.99792458e8;  % velocità della luce [m/s]
-            BRO = @(x)(An/Zn)*((mp*sqrt((1 + x/mp).^2 - 1))/c)*10^6;
-            temp=num2cell(BRO(cell2mat(CyCoData(:,4))));
-            % - make a unique table: 1=CyCo[], 2=range[mm], 3=Energy[MeV/n], 4=Brho[Tm] - columns in final cell array
-            CyCoData={CyCoData{:,1} ; CyCoData{:,2} ; CyCoData{:,4} ; temp{:,1} }';
-            buffer = vertcat( CyCoData{:,1} ) ;      % extract only first four digits of cyco
-            CyCoData(:,1) = cellstr(buffer(:,1:4)) ; % 
-        case {"LINEZ","SALA1","LINEV","SALA2V","LINEU","SALA2H","LINET","SALA3",...
-                "XPRX1","ISO1","XPRX2","ISO2","XPRX3","ISO3","XPRX4","ISO4"}
-            switch beamPart
-                case "PROTON"
-                    % BUILD TABLEs WITH CyCo, Range, Energy and Brho
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\MeVvsCyCo_P.xlsx";
-                    CyCoData = GetOPDataFromTables(FileName,"Sheet1");
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\EvsBro_P.xlsx";
-                    BrhoData = GetOPDataFromTables(FileName,"Sheet1");
-                    % PARSE FILE WITH CURRENTS AT FT - columns in final cell array:
-                    switch machine
-                        case {"LINEZ","SALA1"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Protoni\ProtoniSala1\Protoni_Sala1_2022-03-09.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"09.03.2022 - 10.27");
-                        case {"LINEV","SALA2V"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Protoni\ProtoniSala2V\Protoni_Sala2V_2021-02-13.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"27.01.2022 - 09.08");
-                        case {"LINEU","SALA2H"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Protoni\ProtoniSala2H\Protoni_Sala2H_2021-08-09.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"09.08.2021 - 14.51");
-                        case {"LINET","SALA3"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Protoni\ProtoniSala3\Protoni_Sala3_2021-08-11.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"11.08.2021 - 08.59");
-                        case {"XPRX1","ISO1"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR1\Protoni\FuocoGrande\LGEN_X1_P_FG_10Luglio2019.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX2","ISO2"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR2\Protoni\FuocoGrande\LGEN_X2_P_FG_10Luglio2019.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX3","ISO3"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR3\Protoni\FuocoGrande\LGEN_X3_P_FG_10Luglio2019.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX4","ISO4"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR4\Protoni\FuocoGrande\LGEN_X4_P_FG_10Luglio2019.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                    end
-                case "CARBON"
-                    % BUILD TABLEs WITH CyCo, Range, Energy and Brho
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\MeVvsCyCo_C.xlsx";
-                    CyCoData = GetOPDataFromTables(FileName,"Sheet1");
-                    FileName="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\EvsBro_C.xlsx";
-                    BrhoData = GetOPDataFromTables(FileName,"Sheet1");
-                    % PARSE FILE WITH CURRENTS AT FT - columns in final cell array:
-                    switch machine
-                        case {"LINEZ","SALA1"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Carbonio\lineaZ\fuocopiccolo\Carbonio_Sala1_FromRepoNovembre2020.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"09.11.2020 - 10.10");
-                        case {"LINEV","SALA2V"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Carbonio\lineaV\FuocoPiccolo\Carbonio_Sala2V_FromRepo.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"21.08.2019 - 12.11");
-                        case {"LINEU","SALA2H"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Carbonio\lineaU\FuocoPiccolo\Carbonio_Sala2H_FromRepo.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"21.08.2019 - 12.04");
-                        case {"LINET","SALA3"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\HEBT\Carbonio\lineaT\fuocopiccolo\Carbonio_Sala3_FromRepoNovembre2020.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents,"09.11.2020 - 10.11");
-                        case {"XPRX1","ISO1"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR1\Carbonio\FuocoPiccolo\LGEN_X1_C_FP.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX2","ISO2"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR2\Carbonio\FuocoPiccolo\LGEN_X2_C_FP.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX3","ISO3"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR3\Carbonio\FuocoPiccolo\LGEN_X3_C_FP_X2fit.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                        case {"XPRX4","ISO4"}
-                            FileNameCurrents="P:\Accelerating-System\Accelerator-data\Area dati MD\00Setting\XPR\XPR4\Carbonio\FuocoPiccolo\LGEN_X4_C_FP.xlsx";
-                            currentData = GetOPDataFromTables(FileNameCurrents);
-                    end
-                otherwise
-                    error("no source of data available for %s %s %s",machine,beamPart,config);
-            end % switch: LGEN, LINET/SALA3/LINEU/SALA2H/LINEV/SALA2V/LINEZ/SALA1, beamPart
-            % - get CyCo (col 2 []), range (col 3 [mm]) and Energy (col 1 [MeV/n]) - columns in cell array
-            CyCoData = CyCoData(2:end,:); % remove header
-            % - get Brho (col 2 [Tm]) and Energy (col 1 [MeV/n]) - columns in cell array:
-            BrhoData = BrhoData(2:end,:); % remove header
-            % - get common ranges
-            [commonRanges,iCRa,iCRb]=intersect(cell2mat(CyCoData(:,3)),cell2mat(BrhoData(:,1)));
-            CyCoData=CyCoData(iCRa,:);
-            BrhoData=BrhoData(iCRb,:);
-            % - make a unique table: 1=CyCo[], 2=range[mm], 3=Energy[MeV/n], 4=Brho[Tm] - columns in final cell array
-            CyCoData={CyCoData{:,2} ; CyCoData{:,3} ; CyCoData{:,1} ; BrhoData{:,2} }';
-        otherwise
-            error("no source of data available for %s %s %s",machine,beamPart,config);
-    end % switch: machine
+    %% do the job
+    currentData = GetOPDataFromTables(path2Files(1)); FileNameCurrents=path2Files(1);
+    CyCoData = GetOPDataFromTables(path2Files(2));
+    % - make a unique table: 1=CyCo[], 2=range[mm], 3=Energy[MeV/n], 4=Brho[Tm] - columns in final cell array
+    CyCoData=CyCoData(2:end,1:4);
 
     % get currents and PSs to be crunched
     % - nRows: number of power supplies + a header

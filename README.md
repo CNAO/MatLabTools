@@ -8,6 +8,7 @@ For the time being:
 
 | folder name | description |
 |-----|-----|
+| `displayLib` | library of functions used by `Display*` main scripts |
 | `educational` | scripts of general interest showing quantities relevant to CNAO (e.g. bar of charge, beam quantities vs energy, etc...) |
 | `general` | scripts of general interest (e.g. math, MatLab environment, etc...) |
 | `MADX-optics` | scripts for plotting optics computed by MADX |

@@ -59,3 +59,25 @@ labelsToShow=["DC-Acc\_Part []" "DC-Inj\_Part []" "T_{Acc/Inj} []"];
 % ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
 ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,mms,labelsToShow,"R [mm]");
 % ShowDCThistograms(dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
+
+%% do some math
+[rangeCodes,partCodes]=DecodeCyCodes(DCcyCodes);
+indicesP=FlagPart(partCodes,"p");
+indicesC=FlagPart(partCodes,"C");
+
+% time interval
+% tMin=datetime('23/10/2024 22:00:00'); tMax=datetime('24/10/2024 03:42:00');
+tMin=datetime('24/10/2024 22:00:00'); tMax=datetime('25/10/2024 03:42:00');
+[integralsP,uEksP]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesP,mms);
+[integralsC,uEksC]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesC,mms);
+
+function [integrals,uEks]=IntegrateMe(What,DCtStamps,tMin,tMax,indices,Eks)
+    uEks=unique(Eks(isbetween(DCtStamps,tMin,tMax) & indices));
+    integrals=NaN(size(uEks));
+    if (~isempty(uEks))
+        integrals=NaN(size(uEks));
+        for ii=1:length(uEks)
+            integrals(ii)=sum(What((isbetween(DCtStamps,tMin,tMax) & indices & (Eks==uEks(ii)))));
+        end
+    end
+end

@@ -33,6 +33,7 @@ DCpaths=[...
     strcat(kPath,DCpathMain,"\*\20240702\dcx-*_*_*.txt") 
     strcat(kPath,DCpathMain,"\*\20240703\dcx-*_*_*.txt") 
     ];
+lDCX=true;
 % -------------------------------------------------------------------------
 
 %% parse files

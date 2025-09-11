@@ -21,11 +21,12 @@ end
 
 % -------------------------------------------------------------------------
 % USER's input data
-kPath="S:\Accelerating-System\Accelerator-data";
+kPath="P:\Accelerating-System\Accelerator-data";
 % kPath="K:";
 LPOWerrLogPathMain="\Area dati MD\LPOWmonitor\ErrorLog";
 LPOWerrLogPaths=[...
-    strcat(kPath,LPOWerrLogPathMain,"\2022-03-13\*.txt") 
+    strcat(kPath,LPOWerrLogPathMain,"\2024-10-30\2*.txt") 
+    strcat(kPath,LPOWerrLogPathMain,"\2024-10-31\*.txt") 
     ];
 % -------------------------------------------------------------------------
 

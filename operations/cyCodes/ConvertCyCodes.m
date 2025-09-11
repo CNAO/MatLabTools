@@ -50,7 +50,7 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
     % get maps
     [rangeCodes,partCodes]=DecodeCyCodes(cyCodesIN);
     % verify that all particle codes are recognizable
-    unidentified=(partCodes<0 & partCodes>3 );
+    unidentified=(partCodes<0 | ( partCodes>3 & partCodes~=8 ) );
     if ( sum(unidentified)>0 )
         warning("unidentified particle in some cyCodes:\n%s",PrintUnidentified(cyCodesIN(unidentified)));
     end
@@ -94,6 +94,6 @@ function myMessage=PrintUnidentified(cyCodesINun)
     missingIndices=ismissing(cyCodesINun);
     [ii,jj,kk]=unique(cyCodesINun(~missingIndices));
     freq=accumarray(kk,1);
-    myMessage=sprintf("cycle code: %s - occurrences: %.0f;\n",[ii freq]');
-    myMessage=sprintf("cycle code: <missing> - occurrences: %.0f;\n",sum(missingIndices));
+    myMessage=strcat(sprintf("cycle code: %s - occurrences: %.0f;\n",[ii freq]'),...
+                sprintf("cycle code: <missing> - occurrences: %.0f;\n",sum(missingIndices)));
 end

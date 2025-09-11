@@ -28,6 +28,7 @@ function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
         for iSet=1:nDataSets
             fileNameSplit=split(files(iSet).name,"_"); 
             fileName=strcat(files(iSet).folder,"\",files(iSet).name);
+            lDCX=startsWith(files(iSet).name,"dcx",'IgnoreCase',true);
             fileID = fopen(fileName,"r");
             C = textscan(fileID,'%s %s %f %f %f %s','HeaderLines',1);
             fclose(fileID);
@@ -36,6 +37,9 @@ function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
             tStamps(nCountsTot+1:nCountsTot+nCounts)=datetime(join(string([tStampAss(:),C{:,6}])),"InputFormat","dd-MM-yyyy HH:mm:ss");
             cyProgs(nCountsTot+1:nCountsTot+nCounts)=string(C{:,1});
             cyCodes(nCountsTot+1:nCountsTot+nCounts)=string(C{:,2});
+            if (lDCX)
+                cyCodes(nCountsTot+1:nCountsTot+nCounts)=extractBetween(cyCodes(nCountsTot+1:nCountsTot+nCounts),5,strlength(cyCodes(nCountsTot+1:nCountsTot+nCounts)));
+            end
             currs(nCountsTot+1:nCountsTot+nCounts,1)=C{:,3};
             currs(nCountsTot+1:nCountsTot+nCounts,2)=C{:,4};
             fprintf("...acquired %d entries in file %s (%d/%d)...\n",nCounts,files(iSet).name,iSet,nDataSets);

@@ -1,7 +1,7 @@
 % {}~
 
 %% description
-% this is a basic script which parses DCT files and plots them:
+% this is a basic script which parses DCT/DCX files and plots them:
 % - the script crunches as many DCT files as desired, provided the
 %   fullpaths;
 % - the script shows a spill-per-spill time evolution of the DCT current,
@@ -22,40 +22,40 @@ if (~exist("pathToLibrary","var"))
 end
 
 %% settings
-clear kPath DCTpaths
+clear kPath DCpaths
 
 % -------------------------------------------------------------------------
 % USER's input data
 kPath="P:\Accelerating-System\Accelerator-data";
 % kPath="K:";
-DCTpathMain="\Area dati MD\00monitoraggio\corrente\dcx";
-DCTpaths=[...
-    strcat(kPath,DCTpathMain,"\*\20241023\dcx-*_*_*.txt") 
-    strcat(kPath,DCTpathMain,"\*\20241024\dcx-*_*_*.txt") 
-    strcat(kPath,DCTpathMain,"\*\20241025\dcx-*_*_*.txt") 
+DCpathMain="\Area dati MD\00monitoraggio\corrente\dcx";
+DCpaths=[...
+    strcat(kPath,DCpathMain,"\*\20240702\dcx-*_*_*.txt") 
+    strcat(kPath,DCpathMain,"\*\20240703\dcx-*_*_*.txt") 
     ];
 lDCX=true;
 % -------------------------------------------------------------------------
 
 %% parse files
-clear DCTcyProgs DCTcyCodes DCTcurrs DCTtStamps Eks mms
+clear DCcyProgs DCcyCodes DCcurrs DCtStamps Eks mms
 
-% - parse DCT log files
-[DCTcyProgs,DCTcyCodes,DCTcurrs,DCTtStamps]=ParseDCTFiles(DCTpaths,lDCX);
-if (length(DCTcurrs)<=1), error("...no data aquired, nothing to plot!"); end
+% - parse DC log files
+[DCcyProgs,DCcyCodes,DCcurrs,DCtStamps]=ParseDCTFiles(DCpaths);
+if (length(DCcurrs)<=1), error("...no data aquired, nothing to plot!"); end
 
 % - get Eks corresponding to list of cyCodes
-Eks=ConvertCyCodes(DCTcyCodes,"Ek","MeVvsCyCo_P.xlsx");
-mms=ConvertCyCodes(DCTcyCodes,"mm","MeVvsCyCo_P.xlsx");
+Eks=ConvertCyCodes(DCcyCodes,"Ek","MeVvsCyCo_P.xlsx");
+mms=ConvertCyCodes(DCcyCodes,"mm","MeVvsCyCo_P.xlsx");
 
 %% show data
 
 % -------------------------------------------------------------------------
 % USER's input data
 % - data to show and labels
-dataToShow=[DCTcurrs*1E9 DCTcurrs(:,1)./DCTcurrs(:,2)];
-labelsToShow=["DCT-Acc\_Part []" "DCT-Inj\_Part []" "T_{Acc/Inj} []"];
+dataToShow=[DCcurrs*1E9 DCcurrs(:,1)./DCcurrs(:,2)];
+labelsToShow=["DC-Acc\_Part []" "DC-Inj\_Part []" "T_{Acc/Inj} []"];
 % -------------------------------------------------------------------------
 
-ShowDCTtime(DCTtStamps,dataToShow,DCTcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
-% ShowDCThistograms(dataToShow,DCTcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
+% ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
+ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,mms,labelsToShow,"R [mm]");
+% ShowDCThistograms(dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");

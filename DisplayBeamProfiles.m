@@ -35,43 +35,68 @@ if (~exist("MonPaths","var"))
     % USER's input data
     % -------------------------------------------------------------------------
     kPath="P:\Accelerating-System\Accelerator-data";
-    monTypes="CAMdumps"; % CAM/CAMdumps, DDS, GIM, QBM/QPP/PIB/PMM/SFH/SFM/SFP
+    monTypes="CAM"; % CAM/CAMdumps, DDS, GIM, QBM/QPP/PIB/PMM/SFH/SFM/SFP
     myLabels=[...
-        "test 1: H scan (1E6 per spot)"
-        "test 2: grid (1E6 per spot)"
-        "test 3: V scan (1E6 per spot)"
-        "test 4: V scan (1.2E6 per spot)"
-        "test 5: V scan (1.2E6 per spot)"
-        "test 6: H scan (1.2E6 per spot)"
-        "test 7: H scan (1.2E6 per spot)"
-        "test 8: grid (1.2E6 per spot)"
+        "RP data taking - 2022-03-29 - C400MeV - Tuning"
         ];
     % myLabels=monTypes;
     lSkip=false; % DDS summary file: skip first 2 lines (in addition to header line)
     myFigPath=".";
     % part-dependent stuff
-    % - protoni
-    myFigName="Tests with DDS";
-    myTit="Tests with DDS";
-    MonPaths=[...
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2213\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2219\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2222\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2225\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2227\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2229\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2231\"
-        "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2233\"
-        ];
-%     % - carbonio
-%     myFigName="summary_carbonio_GIM_2023-05-09.10";
-%     myTit="summary 2023-05-09.10 - Carbonio";
+%     % - protoni
+%     myFigName="Tests with DDS";
+%     myTit="Tests with DDS";
 %     MonPaths=[...
-%         strcat(kPath,"\Area dati MD\00Summary\Carbonio\2023\Maggio\2023.05.09-10\Steering ridotti\GIM\PRC-544-230511-0028_H2-009B-GIM_AllTrig\") 
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2213\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2219\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2222\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2225\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2227\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2229\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2231\"
+%         "P:\Accelerating-System\Accelerator-data\scambio\Alessio\2023-08-21_testsOcchiConiglio\DumpProtSO1_LineT_Size10_22-08-2023_2233\"
 %         ];
+
+%     % - carbonio ISO1
+%     myFigName="ISO1_C400_tuning_2022-03-29";
+%     myTit="ISO1 - C400MeV - tuning - 2022-03-29 (RP data taking)";
+%     MonPaths=[...
+%         strcat(kPath,"\Area dati MD\00XPR\Recommissioning_with_beam_for_RP\2022-03-29\Water\Stability_carbonio_350MeV\CarbSO2_LineX1_Size6_30-03-2022_0248\") 
+%         ];
+%     selIDsLow=1:10;
+%     selIDsHigh=401:410;
+%     selIDs=[selIDsLow selIDsHigh];
+%     % - carbonio ISO2
+%     myFigName="ISO2_C400_tuning_2022-04-06";
+%     myTit="ISO2 - C400MeV - tuning - 2022-04-06 (RP data taking)";
+%     MonPaths=[...
+%         strcat(kPath,"\Area dati MD\00XPR\Recommissioning_with_beam_for_RP\2022-04-06\Water\Stability_carbonio_400MeV\CarbSO2_LineX2_Size6_07-04-2022_0039\") 
+%         ];
+%     selIDsLow=1:10;
+%     selIDsHigh=401:410;
+%     selIDs=[selIDsLow selIDsHigh];
+%     % - carbonio ISO3
+%     myFigName="ISO3_C400_tuning_2022-04-10";
+%     myTit="ISO3 - C400MeV - tuning - 2022-04-10 (RP data taking)";
+%     MonPaths=[...
+%         strcat(kPath,"\Area dati MD\00XPR\Recommissioning_with_beam_for_RP\2022-04-10\Water\Stability_carbonio_400MeV\CarbSO2_LineX3_Size6_10-04-2022_1559\") 
+%         ];
+%     selIDsLow=1:10;
+%     selIDsHigh=401:410;
+%     selIDs=[selIDsLow selIDsHigh];
+    % - carbonio ISO4
+    myFigName="ISO4_C400_tuning_2022-04-20";
+    myTit="ISO4 - C400MeV - tuning - 2022-04-20 (RP data taking)";
+    MonPaths=[...
+        strcat(kPath,"\Area dati MD\00XPR\Recommissioning_with_beam_for_RP\2022-04-20\Water\Stability_carbonio_400MeV\Run1\CarbSO2_LineX4_Size6_21-04-2022_0107\") 
+        ];
+    selIDsLow=1:10;
+    selIDsHigh=401:410;
+    selIDs=[selIDsLow selIDsHigh];
+
     vsX="ID"; % ["Ek"/"En"/"Energy","mm"/"r"/"range","ID"/"IDs"]
     iNotShow=false(127,2); 
-    iNotShow(1:2,1)=true;  % do not show left-most fibers on hor plane (broken)
+    % iNotShow(1:2,1)=true;  % do not show left-most fibers on hor plane (broken)
 end
 
 %% check of user input data
@@ -119,15 +144,16 @@ for iDataAcq=1:nDataSets
         case "CAM"
             [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsCAMProcedure(tmpProfiles);
         case "CAMDUMPS"
+            [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsCAMProcedure(tmpProfiles);
 %             FWHMval=0.5;
 %             noiseLevelBAR=0.0; noiseLevelFWHM=0.0;
 %             INTlevel=0.0;
 %             lDebug=true;
 %             [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsCAMProcedure(tmpProfiles,FWHMval,noiseLevelBAR,noiseLevelFWHM,INTlevel,lDebug);
-            noiseLevel=0.0;
-            INTlevel=0;
-            lDebug=true;
-            [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsBDProcedure(tmpProfiles,noiseLevel,INTlevel,lDebug);
+%             noiseLevel=0.0;
+%             INTlevel=0;
+%             lDebug=true;
+%             [tmpBARsProf,tmpFWHMsProf,tmpINTsProf]=StatDistributionsBDProcedure(tmpProfiles,noiseLevel,INTlevel,lDebug);
         case {"QPP","SFP"}
             noiseLevel=0.025;
             INTlevel=5;
@@ -150,15 +176,23 @@ for iDataAcq=1:nDataSets
     mmsProf=ExpandMat(mmsProf,tmpMmsProf);
 
     % - parse summary files
-    if ( strcmpi(monTypes(iDataAcq),"CAM") | strcmpi(monTypes(iDataAcq),"DDS") | strcmpi(monTypes(iDataAcq),"GIM") )
+    if ( strcmpi(monTypes(iDataAcq),"CAM") | strcmpi(monTypes(iDataAcq),"GIM") | strcmpi(monTypes(iDataAcq),"DDS") )
         clear tmpCyProgsSumm tmpCyCodesSumm tmpBARsSumm tmpFWHMsSumm tmpASYMsSumm tmpINTsSumm tmpEksSumm tmpMmsSumm;
         [tmpCyProgsSumm,tmpCyCodesSumm,tmpBARsSumm,tmpFWHMsSumm,tmpASYMsSumm,tmpINTsSumm]=ParseBeamProfileSummaryFiles(MonPaths(iDataAcq),monTypes(iDataAcq),lSkip);
-        if (length(tmpCyProgsSumm)<=1), error("...no summary data aquired!"); end
-        % - quick check of consistency of parsed data
-        if (length(tmpCyProgsSumm)~=length(tmpCyProgsProf)), error("...inconsistent data set between summary data and actual profiles"); end
-        % - Eks,mms
-        tmpEksSumm=ConvertCyCodes(tmpCyCodesSumm,"Ek","MeVvsCyCo_P.xlsx");
-        tmpMmsSumm=ConvertCyCodes(tmpCyCodesSumm,"mm","MeVvsCyCo_P.xlsx");
+        if (length(tmpCyProgsSumm)<=1)
+            warning("...no summary data aquired!");
+            tmpEksSumm=NaN();
+            tmpMmsSumm=NaN();
+        else
+            % - quick check of consistency of parsed data
+            if (length(tmpCyProgsSumm)~=length(tmpCyProgsProf))
+                error("...inconsistent data set between summary data (%d) and actual profiles (%d)!",...
+                    length(tmpCyProgsSumm),length(tmpCyProgsProf));
+            end
+            % - Eks,mms
+            tmpEksSumm=ConvertCyCodes(tmpCyCodesSumm,"Ek","MeVvsCyCo_P.xlsx");
+            tmpMmsSumm=ConvertCyCodes(tmpCyCodesSumm,"mm","MeVvsCyCo_P.xlsx");
+        end
         % - store data
         cyProgsSumm=ExpandMat(cyProgsSumm,tmpCyProgsSumm);
         cyCodesSumm=ExpandMat(cyCodesSumm,tmpCyCodesSumm);
@@ -203,17 +237,20 @@ for iDataAcq=1:nDataSets
     switch upper(monTypes(iDataAcq))
         case {"CAM","DDS","GIM"}
             iDataSumm=iDataSumm+1;
+            % - get unique data sets
+            [~,jDataAcq,~]=unique(mmsProf(:,iDataAcq),"last"); jDataAcq=jDataAcq(~isnan(mmsProf(jDataAcq,iDataAcq)));
+            [~,jDataSum,~]=unique(mmsSumm(:,iDataSumm),"last"); jDataSum=jDataSum(~isnan(mmsSumm(jDataSum,iDataSumm)));
             % - compare summary data and statistics on profiles
-            CompBars=BARsSumm(:,:,iDataSumm); CompBars(:,:,2)=BARsProf(:,:,iDataAcq);
-            CompFwhms=FWHMsSumm(:,:,iDataSumm); CompFwhms(:,:,2)=FWHMsProf(:,:,iDataAcq);
-            CompInts=INTsSumm(:,:,iDataSumm); CompInts(:,:,2)=INTsProf(:,:,iDataAcq);
+            CompBars=BARsSumm(jDataSum,:,iDataSumm); CompBars(:,:,2)=BARsProf(jDataAcq,:,iDataAcq);
+            CompFwhms=FWHMsSumm(jDataSum,:,iDataSumm); CompFwhms(:,:,2)=FWHMsProf(jDataAcq,:,iDataAcq);
+            CompInts=INTsSumm(jDataSum,:,iDataSumm); CompInts(:,:,2)=INTsProf(jDataAcq,:,iDataAcq);
             switch upper(vsX)
                 case {"EK","EN","ENERGY"}
-                    CompXs=EksSumm(:,iDataAcq); CompXs(:,2)=EksProf(:,iDataAcq);
+                    CompXs=EksSumm(jDataSum,iDataAcq); CompXs(:,2)=EksProf(jDataAcq,iDataAcq);
                 case {"ID","IDS"}
-                    CompXs=(1:size(BARsSumm,1))'; CompXs(:,2)=addIndex(:,iDataAcq);
+                    CompXs=(1:size(BARsSumm(jDataSum,:,iDataSumm),1))'; CompXs(:,2)=addIndex(jDataAcq,iDataAcq);
                 case {"MM","R","RANGE"}
-                    CompXs=mmsSumm(:,iDataAcq); CompXs(:,2)=mmsProf(:,iDataAcq);
+                    CompXs=mmsSumm(jDataSum,iDataAcq); CompXs(:,2)=mmsProf(jDataAcq,iDataAcq);
                 otherwise
                     error("Cannot recognise what you want as X-axis in summary overviews: %s!",vsX);
             end
@@ -225,3 +262,38 @@ end
 %% save summary data
 % oFileName=strcat(kPath,"\scambio\Alessio\Carbonio_preSteering_summary-from-profiles.csv");
 % SaveBeamProfileSummaryFile(oFileName,tmpBARsProf,tmpFWHMsProf,tmpINTsProf,tmpCyCodesProf,tmpCyProgsProf,"DDS");
+
+%% further plots
+% ShowSpectra(profiles(:,[1 1+selIDs],:),sprintf("%s - 3D profiles",myTit));
+% normProfiles=profiles(:,[1 1+selIDs],:);
+% for ii=1:length(selIDs)
+%     for iPlane=1:size(normProfiles,3)
+%         normProfiles(:,1+ii,iPlane)=normProfiles(:,1+ii,iPlane)./INTsProf(selIDs(ii),iPlane);
+%     end
+% end
+% if (exist("myFigPath","var")), myFigSave=strcat(myFigPath,"\3DnormProfiles_",myFigName,".fig"); else myFigSave=missing(); end
+% ShowSpectra(normProfiles,sprintf("%s - 3D NORMALISED profiles",myTit),missing(),missing(),missing(),myFigSave);
+% 
+% ff=figure(); ff.Position(3)=1.5*ff.Position(3);
+% cm=[colormap(winter(length(selIDsLow)));colormap(copper(length(selIDsHigh)))]; planeLab=["HOR plane" "VER plane"];
+% for iPlane=1:length(planeLab)
+%     subplot(1,3,iPlane);
+%     for ii=1:length(selIDs)
+%         if (ii>1), hold on; end
+%         stairs(normProfiles(:,1,iPlane),normProfiles(:,1+ii,iPlane),"Color",cm(ii,:));
+%     end
+%     grid on; xlabel("[mm]"); ylabel("[]"); title(planeLab(iPlane));
+% end
+% % legend plot
+% subplot(1,3,3);
+% for ii=1:length(selIDs)
+%     if (ii>1), hold on; end
+%     stairs(NaN(),NaN(),"Color",cm(ii,:));
+% end
+% grid on; xlabel("[mm]"); ylabel("[]"); title(planeLab(iPlane));
+% legend(compose("ID=%d",selIDs),"Location","best");
+% % general stuff
+% sgtitle(sprintf("%s - 3D NORMALISED profiles",myTit));
+% if (exist("myFigPath","var")), savefig(strcat(myFigPath,"\2DnormProfiles_",myFigName,".fig")); end
+
+

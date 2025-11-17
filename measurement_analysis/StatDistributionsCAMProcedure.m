@@ -32,7 +32,7 @@ function [BARs,FWHMs,INTs]=StatDistributionsCAMProcedure(profiles,FWHMval,noiseL
     if ( ~exist('noiseLevelBAR','var') ), noiseLevelBAR=0.05; end
     if ( ~exist('noiseLevelFWHM','var') ), noiseLevelFWHM=0.20; end
     if ( ~exist('INTlevel','var') ), INTlevel=20000; end
-    if ( ~exist('lDebug','var') ), lDebug=false; end
+    if ( ~exist('lDebug','var') ), lDebug=true; end
     
     fprintf("computing BARs and FWHMs as done for CAMeretta...\n");
     % if >1, levels are assumed in percentage
@@ -54,7 +54,7 @@ function [BARs,FWHMs,INTs]=StatDistributionsCAMProcedure(profiles,FWHMval,noiseL
         tmpXs(:,1:2)=profiles(:,1,:);      % (nFibers,2)
         tmpYs(:,1:2)=profiles(:,1+iSet,:); % (nFibers,2)
         tmpINTs=sum(tmpYs,"omitnan");
-        if ( sum(tmpINTs,"omitnan")== 0 ), continue; end
+        if ( sum(tmpINTs,"omitnan")<= 1000 ), continue; end
         if ( lDebug ), sgtitle(sprintf("CAMeretta profiles id #%d",iSet)); end
         % INTs
         INTs(iSet,1:2)=tmpINTs; % take as integral the counts on the entire profile
@@ -79,6 +79,7 @@ function [BARs,FWHMs,INTs]=StatDistributionsCAMProcedure(profiles,FWHMval,noiseL
             FWHMright=max(tmpXs(tmpIndices,iPlane));
             FWHMs(iSet,iPlane)=0.0;
             myXs=tmpXs(:,iPlane); myYs=0.0*myXs; repYs=0.0*myXs; 
+            FWHMvalAbs=0.0; tmpMax=0.0;
             if ( nPoints==sum(tmpYs(:,iPlane)>0) & INTs(iSet,iPlane)<INTlevel)
                 warning("...cannot actually identify a bell-shaped profile!");
                 [tmpMax,idMax]=max(tmpYs(:,iPlane));
@@ -97,7 +98,7 @@ function [BARs,FWHMs,INTs]=StatDistributionsCAMProcedure(profiles,FWHMval,noiseL
                     FWHMvalAbs=FWHMval*tmpMax;
                     if ( idMax==1 | idMax==length(repYs) )
                         warning("...not enough points for finding width on one of the two sides of profile on %s plane for data set %d! skipping...",planes(iPlane),iSet);
-                    elseif ( all(abs(pp(1:end-1))<1E-14) )
+                    elseif ( all(abs(pp(1:end-1))<2E-14) )
                         warning("...flat profile!");
                     else
                         FWHMleft=interp1(repYs(1:idMax),myXs(1:idMax),FWHMvalAbs);

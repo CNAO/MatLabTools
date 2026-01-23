@@ -28,9 +28,11 @@ function [Eks,cyCodes,mms]=ParseMeVvsCyCo(varIN,kPath,sheetName)
         sheetName="Sheet1";
     end
     if ( isstring( varIN ) )
+        lUp=false;
         % varIN is the (full) path to the file
         fileToParse=varIN;
     else
+        lUp=true;
         % varIN specifies if to parse the proton or carbon file
         switch varIN
             case 1
@@ -44,8 +46,13 @@ function [Eks,cyCodes,mms]=ParseMeVvsCyCo(varIN,kPath,sheetName)
     
     % actually do the job
     MeVvsCyCo = GetOPDataFromTables(fileToParse,sheetName);
-    Eks = cell2mat(MeVvsCyCo(2:end,1));
+    if (lUp)
+        Eks = cell2mat(MeVvsCyCo(2:end,3));
+        mms = cell2mat(MeVvsCyCo(2:end,1));
+    else
+        Eks = cell2mat(MeVvsCyCo(2:end,1));
+        mms = cell2mat(MeVvsCyCo(2:end,3));
+    end
     cyCodes = string(MeVvsCyCo(2:end,2)); cyCodes=UpperCyCodes(cyCodes);
-    mms = cell2mat(MeVvsCyCo(2:end,3));
     
 end

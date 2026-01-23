@@ -1,4 +1,4 @@
-function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
+function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files)
 % ParseDCTFiles        parse log files of the synchro DCT/DCX
 %
 % input:
@@ -15,7 +15,9 @@ function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
 %
 % file of counts must have the following format:
 % - 1 header line;
-% - a line for each cycle prog; the format of the line is eg: "195873069  420036440900  0.433  0.863  50.166  00:02:13"
+% - a line for each cycle prog; the format of the line is eg:
+%   * "195873069  420036440900  0.433  0.863  50.166  00:02:13"
+%   * "243520368	0000100032444900	02:06:22	0.880	0.520	59.1	0	0"
 
     fprintf("acquring DCT data...\n");
     if (~exist("lDCX","var")), lDCX=false; end
@@ -24,25 +26,38 @@ function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
     for iPath=1:length(paths2Files)
         files=dir(paths2Files(iPath));
         nDataSets=length(files);
-        fprintf("...acquring %i data sets in %s ...\n",nDataSets,paths2Files(iPath));
+        fprintf("...acquring %i data sets in %s...\n",nDataSets,paths2Files(iPath));
         for iSet=1:nDataSets
             fileNameSplit=split(files(iSet).name,"_"); 
             fileName=strcat(files(iSet).folder,"\",files(iSet).name);
+            fprintf("   ...acquiring file %s (%d/%d)...\n",files(iSet).name,iSet,nDataSets);
             lDCX=startsWith(files(iSet).name,"dcx",'IgnoreCase',true);
             fileID = fopen(fileName,"r");
-            C = textscan(fileID,'%s %s %f %f %f %s','HeaderLines',1);
+            if (lDCX)
+                C = textscan(fileID,'%s %s %s %f %f %f %d %d','HeaderLines',1);
+                iDate=3;
+                dateFmt="yyyy-MM-dd HH:mm:ss";
+                iAcc=5;
+                iInj=4;
+            else
+                C = textscan(fileID,'%s %s %f %f %f %s','HeaderLines',1);
+                iDate=6;
+                dateFmt="dd-MM-yyyy HH:mm:ss";
+                iAcc=3;
+                iInj=4;
+            end
             fclose(fileID);
             nCounts=length(C{:,1});
             tStampAss=fileNameSplit(2); tStampAss(1:nCounts)=tStampAss; % time stamp: day
-            tStamps(nCountsTot+1:nCountsTot+nCounts)=datetime(join(string([tStampAss(:),C{:,6}])),"InputFormat","dd-MM-yyyy HH:mm:ss");
+            tStamps(nCountsTot+1:nCountsTot+nCounts)=datetime(join(string([tStampAss(:),C{:,iDate}])),"InputFormat",dateFmt);
             cyProgs(nCountsTot+1:nCountsTot+nCounts)=string(C{:,1});
             cyCodes(nCountsTot+1:nCountsTot+nCounts)=string(C{:,2});
             if (lDCX)
                 cyCodes(nCountsTot+1:nCountsTot+nCounts)=extractBetween(cyCodes(nCountsTot+1:nCountsTot+nCounts),5,strlength(cyCodes(nCountsTot+1:nCountsTot+nCounts)));
             end
-            currs(nCountsTot+1:nCountsTot+nCounts,1)=C{:,3};
-            currs(nCountsTot+1:nCountsTot+nCounts,2)=C{:,4};
-            fprintf("...acquired %d entries in file %s (%d/%d)...\n",nCounts,files(iSet).name,iSet,nDataSets);
+            currs(nCountsTot+1:nCountsTot+nCounts,1)=C{:,iAcc};
+            currs(nCountsTot+1:nCountsTot+nCounts,2)=C{:,iInj};
+            fprintf("...acquired %d entries;\n",nCounts);
             nCountsTot=nCountsTot+nCounts;
             nReadFiles=nReadFiles+1;
         end
@@ -60,10 +75,6 @@ function [cyProgs,cyCodes,currs,tStamps]=ParseDCTFiles(paths2Files,lDCX)
             [tStamps,currs,ids]=SortByTime(tStamps,currs); % sort by timestamps
             cyProgs=cyProgs(ids(:,1));
             cyCodes=cyCodes(ids(:,1));
-        end
-        if (lDCX)
-            % cut away leading zeros in cyCodes
-            cyCodes=extractBetween(cyCodes,5,strlength(cyCodes));
         end
     else
         tStamps=missing;

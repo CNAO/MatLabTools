@@ -26,14 +26,22 @@ clear kPath DCpaths
 
 % -------------------------------------------------------------------------
 % USER's input data
-kPath="P:\Accelerating-System\Accelerator-data";
+kPath="R:\Accelerating-System\Accelerator-data";
+% kPath="P:\Accelerating-System\Accelerator-data";
 % kPath="K:";
 DCpathMain="\Area dati MD\00monitoraggio\corrente\dcx";
 DCpaths=[...
-    strcat(kPath,DCpathMain,"\*\20240702\dcx-*_*_*.txt") 
-    strcat(kPath,DCpathMain,"\*\20240703\dcx-*_*_*.txt") 
+    % 2025-07 SIG
+%     strcat(kPath,DCpathMain,"\*\20250705\dcx-*_*_*.txt") 
+%     strcat(kPath,DCpathMain,"\*\20250706\dcx-*_*_*.txt") 
+    % 2025-09-07 FOOT (MSD)
+%     strcat(kPath,DCpathMain,"\*\20250907\dcx-*_*_*.txt") 
+    % 2025-12-13.14 Adapt
+    strcat(kPath,DCpathMain,"\*\20251213\dcx-*_*_*.txt") 
+    strcat(kPath,DCpathMain,"\*\20251214\dcx-*_*_*.txt") 
+    strcat(kPath,DCpathMain,"\*\20251215\dcx-*_*_*.txt") 
     ];
-lDCX=true;
+% lDCX=true;
 % -------------------------------------------------------------------------
 
 %% parse files
@@ -56,7 +64,7 @@ dataToShow=[DCcurrs*1E9 DCcurrs(:,1)./DCcurrs(:,2)];
 labelsToShow=["DC-Acc\_Part []" "DC-Inj\_Part []" "T_{Acc/Inj} []"];
 % -------------------------------------------------------------------------
 
-% ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
+ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
 ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,mms,labelsToShow,"R [mm]");
 % ShowDCThistograms(dataToShow,DCcyCodes,Eks,labelsToShow,"HEBT E_k [MeV/u]");
 
@@ -64,12 +72,16 @@ ShowDCTtime(DCtStamps,dataToShow,DCcyCodes,mms,labelsToShow,"R [mm]");
 [rangeCodes,partCodes]=DecodeCyCodes(DCcyCodes);
 indicesP=FlagPart(partCodes,"p");
 indicesC=FlagPart(partCodes,"C");
+infmt='dd/MM/uuuu HH:mm:ss';
 
-% time interval
-% tMin=datetime('23/10/2024 22:00:00'); tMax=datetime('24/10/2024 03:42:00');
-tMin=datetime('24/10/2024 22:00:00'); tMax=datetime('25/10/2024 03:42:00');
-[integralsP,uEksP]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesP,mms);
-[integralsC,uEksC]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesC,mms);
+%% time interval
+% 2025-07 SIG
+% tMin=datetime('05/07/2025 14:00:00','InputFormat',infmt); tMax=datetime('05/07/2025 22:00:00','InputFormat',infmt);
+% tMin=datetime('06/07/2025 14:00:00','InputFormat',infmt); tMax=datetime('06/07/2025 22:00:00','InputFormat',infmt);
+% 2025-09-07 FOOT (MSD)
+tMin=datetime('07/09/2025 11:30:00','InputFormat',infmt); tMax=datetime('07/09/2025 11:35:00','InputFormat',infmt);
+[integralsP,uEksP]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesP,Eks);
+[integralsC,uEksC]=IntegrateMe(DCcurrs(:,1),DCtStamps,tMin,tMax,indicesC,Eks);
 
 function [integrals,uEks]=IntegrateMe(What,DCtStamps,tMin,tMax,indices,Eks)
     uEks=unique(Eks(isbetween(DCtStamps,tMin,tMax) & indices));
@@ -78,6 +90,7 @@ function [integrals,uEks]=IntegrateMe(What,DCtStamps,tMin,tMax,indices,Eks)
         integrals=NaN(size(uEks));
         for ii=1:length(uEks)
             integrals(ii)=sum(What((isbetween(DCtStamps,tMin,tMax) & indices & (Eks==uEks(ii)))));
+            fprintf("...found %g over %d spills;\n",integrals(ii),sum((isbetween(DCtStamps,tMin,tMax) & indices & (Eks==uEks(ii)))));
         end
     end
 end

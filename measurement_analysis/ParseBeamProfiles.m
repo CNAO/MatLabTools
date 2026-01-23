@@ -113,12 +113,12 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
         nDataSets=length(files);
         fprintf("acquring %i data sets with %s format in path %s ...\n",nDataSets,upper(fFormat),tmpPath);
 
-        nAcq=0;
-        for iSet=1:nDataSets
+        nAcq=0; lTime=false; [~,IDs]=sort([files.datenum]); iAcq=0;
+        for iSet=IDs
             switch upper(fFormat)
                 case "CAM"
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"_");
                     tmpCyProg=str2num(tmp{1});
@@ -136,8 +136,8 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                     measData(1:Ny,1,2)=tmp(1:Ny,1);                % fiber positions
                     measData(1:Ny,1+actualDataSets,2)=tmp(1:Ny,3); % values
                 case "CAMDUMPS"
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"_");
                     tmpCyProg=str2num(tmp{1});
@@ -153,16 +153,19 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                     if (nRows>nMaxColsActual), nMaxColsActual=nRows; end
                     % x-axis values
                     measData(1:Nx,1,1,actualDataSets)=(-63:63)';              % fiber positions
-                    measData(1:Nx,2:nRows+1,1,actualDataSets)=tmp(:,2:Nx+1)'; % values
+                    % measData(1:Nx,2:nRows+1,1,actualDataSets)=tmp(:,2:Nx+1)'; % values
+                    measData(1:Nx,2:nRows+1,1,actualDataSets)=tmp(:,4:Nx+3)'; % values (skip 2nd and 3rd columns, listing totals)
                     % y-axis values
                     measData(1:Ny,1,2,actualDataSets)=(-63:63)';                    % fiber positions
-                    measData(1:Ny,2:nRows+1,2,actualDataSets)=tmp(:,Nx+2:Nx+1+Ny)'; % values
+                    % measData(1:Ny,2:nRows+1,2,actualDataSets)=tmp(:,Nx+2:Nx+1+Ny)'; % values
+                    measData(1:Ny,2:nRows+1,2,actualDataSets)=tmp(:,Nx+4:Nx+3+Ny)'; % values (skip 2nd and 3rd columns, listing totals)
                     % t-stamps
                     times(1:nRows,actualDataSets)=tmp(:,1)';
                     times(nRows+1:end,actualDataSets)=NaN();
+                    lTime=true;
                 case "DDS"
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"-");
                     tmpCyProg=str2num(tmp{3});
@@ -184,8 +187,8 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                         % matlab does not support single char wildcard...
                         continue
                     end
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"_");
                     tmpCyProg=str2num(tmp{2});
@@ -209,13 +212,14 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                     % t-stamps
                     times(1:nCols-1,actualDataSets)=(0:10:(nCols-2)*10)';
                     times(nCols:end,actualDataSets)=NaN();
+                    lTime=true;
                 case {"PMM","PIB"}
                     if (strfind(files(iSet).name,"Norm"))
                         fprintf("   ...skipping Norm file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
                         continue
                     end
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"-");
                     tmp=split(tmp{2},".");
@@ -234,9 +238,10 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                     % t-stamps
                     times(1:nCols-1,actualDataSets)=(0:10:(nCols-2)*10)';
                     times(nCols:end,actualDataSets)=NaN();
+                    lTime=true;
                 case {"QBM","QPP","SFH","SFM","SFP"}
-                    nAcq=nAcq+1;
-                    fprintf("...parsing file %d/%d: %s ...\n",iSet,nDataSets,files(iSet).name);
+                    iAcq=iAcq+1; nAcq=nAcq+1;
+                    fprintf("...parsing file %d/%d: %s ...\n",iAcq,nDataSets,files(iSet).name);
                     % check cycle prog, to guarantee continuity
                     tmp=split(files(iSet).name,"-");
                     tmpCyProg=str2num(tmp{3});
@@ -261,6 +266,7 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
                     % t-stamps
                     times(1:nCols-1,actualDataSets)=(0:10:(nCols-2)*10)';
                     times(nCols:end,actualDataSets)=NaN();
+                    lTime=true;
             end
             % store cycle prog and cycle code
             cyProgs(actualDataSets)=tmpCyProg;
@@ -280,7 +286,7 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
     if (nMaxColsActual>0 && nMaxColsActual<nMaxCols)
         % cut away unfilled columns;
         measData(:,1+nMaxColsActual+1:end,:,:)=[];
-        times(nMaxColsActual+1:end,:)=[];
+        if (lTime), times(nMaxColsActual+1:end,:)=[]; end
     end
     if ( nAcquired>0 )
         cyCodes=PadCyCodes(cyCodes);
@@ -300,7 +306,7 @@ function [measData,cyCodes,cyProgs,times]=ParseBeamProfiles(paths2Files,fFormat)
         end
         cyCodes=cyCodes(idx);
         cyProgs=string(cyProgs);
-        times=times(:,idx);
+        if (lTime), times=times(:,idx); end
     else
         measData=missing;
         cyProgs=missing;

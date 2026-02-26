@@ -52,7 +52,7 @@ function [ losses, nTotLosses ] = ReadLosses(path2Files,nInitial,delays,nExpecte
                 iCol=mapping(strcmpi(colNames,"TURN"));
                 tmpLosses{iCol}=tmpLosses{iCol}+delays(kk);
             end
-            if (~ismissing(nInitial) && ii>1)
+            if (cumInitial~=0 && ii>1)
                 iCol=mapping(strcmpi(colNames,"NUMBER"));
                 tmpLosses{iCol}=tmpLosses{iCol}+cumInitial(ii-1);
             end
@@ -60,7 +60,9 @@ function [ losses, nTotLosses ] = ReadLosses(path2Files,nInitial,delays,nExpecte
             if (length(losses)==0)
                 losses=tmpLosses;
             else
-                losses{nTotLosses+1:nTotLosses+nLosses}=tmpLosses;
+                for jj=1:size(losses,2)
+                    losses{jj}(nTotLosses+1:nTotLosses+nLosses)=tmpLosses{jj};
+                end
             end
             nTotLosses=nTotLosses+nLosses;
         end

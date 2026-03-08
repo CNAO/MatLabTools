@@ -7,9 +7,10 @@ function [Eks,cyCodes,mms]=ParseMeVvsCyCo(varIN,kPath,sheetName)
 %   . if string: full path (including name) to file to be parsed;
 %   . if integer: the default files are parsed:
 %     =1: file for proton;
+%     =2: file for helium;
 %     =6: file for carbon;
 % - kPath (string, optional): path to K: drive; default: 
-%     S:\Accelerating-System\Accelerator-data
+%     R:\Accelerating-System\Accelerator-data
 %     This parameter is necessary only for default files;
 % - sheetName (string, optional): name of sheet in .xlsx file to be parsed.
 %
@@ -22,7 +23,7 @@ function [Eks,cyCodes,mms]=ParseMeVvsCyCo(varIN,kPath,sheetName)
 
     % check input
     if ( ~exist('kPath','var') )
-        kPath="P:\Accelerating-System\Accelerator-data";
+        kPath="R:\Accelerating-System\Accelerator-data";
     end
     if ( ~exist('sheetName','var') )
         sheetName="Sheet1";
@@ -37,6 +38,8 @@ function [Eks,cyCodes,mms]=ParseMeVvsCyCo(varIN,kPath,sheetName)
         switch varIN
             case 1
                 fileToParse=strcat(kPath,"\Area dati MD\00Setting\MeVvsCyCo_P.xlsx");
+            case 2
+                fileToParse=strcat(kPath,"\Area dati MD\00Setting\MeVvsCyCo_He.xlsx");
             case 6
                 fileToParse=strcat(kPath,"\Area dati MD\00Setting\MeVvsCyCo_C.xlsx");
             otherwise

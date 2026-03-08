@@ -1,4 +1,4 @@
-function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
+function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,pathHe,lDebug)
 % ConvertCyCodes             converts a given list of cycle codes into a list 
 %                              of corresponding beam energies or mm range
 % input:
@@ -8,12 +8,13 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
 %   . mm: mm-range corresponding to the cyCodes;
 % - pathP (string, optional): path to MeVvsCyCo file for protons;
 % - pathC (string, optional): path to MeVvsCyCo file for carbon ions;
+% - pathHe (string, optional): path to MeVvsCyCo file for helium ions;
 % - lDebug (boolean, optional): activates debug mode;
 %
 % output:
 % - vOut (array of floats): either beam energies [MeV/u] or range [mm] of each
 %                           cyCodesIN;
-% - Refs (array of floats x2): reference values in parsed .xlsx files
+% - Refs (array of floats x3): reference values in parsed .xlsx files
 %                          (either beam energies [MeV/u] or range [mm]);
 %
 % NB: length(vOut)=length(cyCodesIN)=length(ZZin)
@@ -24,6 +25,7 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
     if ( ~exist('what','var') ), what="Ek"; end
     if ( ~exist('pathP','var') ), pathP=1; end
     if ( ~exist('pathC','var') ), pathC=6; end
+    if ( ~exist('pathHe','var') ), pathHe=2; end
     if ( ~exist('lDebug','var') ), lDebug=false; end
     if ( ~strcmpi(what,"EK") & ~strcmpi(what,"MM") )
         error("Unable to recognize request %s",what);
@@ -31,6 +33,7 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
    
     % get reference cyCodes
     [P_Eks,P_cyCodes,P_mms]=ParseMeVvsCyCo(pathP);
+    [He_Eks,He_cyCodes,He_mms]=ParseMeVvsCyCo(pathHe);
     [C_Eks,C_cyCodes,C_mms]=ParseMeVvsCyCo(pathC);
 
     % in case of debug, show reference data
@@ -38,9 +41,11 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
         switch upper(what)
             case "EK"
                 ShowDebugRefData(P_Eks,"E_k [MeV/u]","Proton");
+                ShowDebugRefData(He_Eks,"E_k [MeV/u]","Helium");
                 ShowDebugRefData(C_Eks,"E_k [MeV/u]","Carbon");
             case "MM"
                 ShowDebugRefData(P_mms,"range in water [mm]","Proton");
+                ShowDebugRefData(He_mms,"range in water [mm]","Helium");
                 ShowDebugRefData(C_mms,"range in water [mm]","Carbon");
         end
     end
@@ -49,15 +54,11 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
     
     % get maps
     [rangeCodes,partCodes]=DecodeCyCodes(cyCodesIN);
-    % verify that all particle codes are recognizable
-    unidentified=(partCodes<0 | ( partCodes>3 & partCodes~=8 ) );
-    if ( sum(unidentified)>0 )
-        warning("unidentified particle in some cyCodes:\n%s",PrintUnidentified(cyCodesIN(unidentified)));
-    end
     [lCCP,iCCP]=MapCyCode(rangeCodes,P_cyCodes);
+    [lCCHe,iCCHe]=MapCyCode(rangeCodes,He_cyCodes);
     [lCCC,iCCC]=MapCyCode(rangeCodes,C_cyCodes);
     % verify that all ranges are recognizable
-    unidentified=find(~lCCC & ~lCCP);
+    unidentified=find(~lCCC & ~lCCP & ~lCCHe);
     if ( sum(unidentified)>0 )
         warning("unidentified range in some cyCodes:\n%s",PrintUnidentified(cyCodesIN(unidentified)));
     end
@@ -65,19 +66,24 @@ function [vOut,Refs]=ConvertCyCodes(cyCodesIN,what,pathP,pathC,lDebug)
     % assign values
     vOut=NaN(length(cyCodesIN),1);
     indices_P=(lCCP & FlagPart(partCodes,"p") );
+    indices_He=(lCCHe & FlagPart(partCodes,"He") );
     indices_C=(lCCC & FlagPart(partCodes,"C") );
-    Refs=NaN(max(length(P_cyCodes),length(C_cyCodes)),2);
+    Refs=NaN(max([length(P_cyCodes),length(C_cyCodes),length(He_cyCodes)]),3);
     switch upper(what)
         case "EK"
             vOut(indices_P)=P_Eks(iCCP(indices_P));
             vOut(indices_C)=C_Eks(iCCC(indices_C));
+            vOut(indices_He)=He_Eks(iCCHe(indices_He));
             Refs(1:length(P_cyCodes),1)=P_Eks;
             Refs(1:length(C_cyCodes),2)=C_Eks;
+            Refs(1:length(He_cyCodes),3)=He_Eks;
         case "MM"
             vOut(indices_P)=P_mms(iCCP(indices_P));
             vOut(indices_C)=C_mms(iCCC(indices_C));
+            vOut(indices_He)=He_mms(iCCHe(indices_He));
             Refs(1:length(P_cyCodes),1)=P_mms;
             Refs(1:length(C_cyCodes),2)=C_mms;
+            Refs(1:length(He_cyCodes),3)=He_mms;
     end
     
 end
